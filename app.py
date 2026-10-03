@@ -142,7 +142,7 @@ def telegram_webhook():
                     [
                         {
                             "text": "Написать в Instagram",
-                            "url": "https://www.instagram.com/iphotoMasterr/",
+                            "url": "https://www.instagram.com/aiphotomasterr/",
                         }
                     ]
                 ]
