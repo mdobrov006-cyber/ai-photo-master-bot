@@ -58,6 +58,60 @@ def home():
 def telegram_webhook():
     update = request.get_json(silent=True) or {}
 
+    # Новая заявка на вступление в канал
+    join_request = update.get("chat_join_request")
+
+    if join_request:
+        channel_id = join_request["chat"]["id"]
+        user = join_request["from"]
+
+        username = (
+            f"@{user['username']}"
+            if user.get("username")
+            else "без username"
+        )
+
+        full_name = " ".join(
+            x
+            for x in [
+                user.get("first_name"),
+                user.get("last_name"),
+            ]
+            if x
+        )
+
+        try:
+            admins_response = requests.get(
+                f"{TELEGRAM_API}/getChatAdministrators",
+                params={"chat_id": channel_id},
+                timeout=10,
+            ).json()
+
+            admins = admins_response.get("result", [])
+
+            owner_id = next(
+                (
+                    admin["user"]["id"]
+                    for admin in admins
+                    if admin.get("status") == "creator"
+                ),
+                None,
+            )
+
+            if owner_id:
+                send_message(
+                    owner_id,
+                    "🔔 <b>Новая заявка на вступление "
+                    "в AI PHOTO MASTER</b>\n\n"
+                    f"👤 {full_name}\n"
+                    f"🔗 {username}",
+                )
+
+        except Exception as e:
+            print("Join request notification error:", e)
+
+        return "OK", 200
+
     message = update.get("message", {})
     chat = message.get("chat", {})
     text = message.get("text", "")
@@ -142,7 +196,7 @@ def telegram_webhook():
                     [
                         {
                             "text": "Написать в Instagram",
-                            "url": "https://www.instagram.com/aiphotomasterr/",
+                            "url": "https://www.instagram.com/iphotoMasterr/",
                         }
                     ]
                 ]
